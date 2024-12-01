@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Privacy {
+  PUBLIC
+  PRIVATE
+  RESTRICTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  profile   Profile?
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  followers Follower[] @relation("FollowersAsFollowed")
+  following Follower[] @relation("FollowersAsFollower")
+  messages  Message[]
+  conversations ConversationParticipant[]
+}
+
+model Profile {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  bio       String?
+  avatarUrl String?
+  location  String?
+  website   String?
+  createdAt DateTime @default(now())
+
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+model Follower {
+  id         String   @id @default(uuid())
+  followerId String
+  followedId String
+  createdAt  DateTime @default(now())
+
+  follower   User     @relation("FollowersAsFollower", fields: [followerId], references: [id])
+  followed   User     @relation("FollowersAsFollowed", fields: [followedId], references: [id])
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  userId    String
+  content   String
+  imageUrl  String?
+  privacy   Privacy
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  comments  Comment[]
+  likes     Like[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  parentId  String?  // For nested comments
+  content   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  parent    Comment? @relation("NestedComments", fields: [parentId], references: [id])
+  replies   Comment[] @relation("NestedComments")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+}
+
+model Conversation {
+  id         String                 @id @default(uuid())
+  name       String?
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @default(now())
+  messages   Message[]
+  participants ConversationParticipant[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime     @default(now())
+  isRead         Boolean      @default(false)
+
+  sender         User         @relation(fields: [senderId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}

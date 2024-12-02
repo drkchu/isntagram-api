@@ -16,5 +16,9 @@
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }

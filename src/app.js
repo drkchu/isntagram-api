@@ -1,10 +1,10 @@
 const express = require('express');
 const dotenv = require('dotenv');
-
-dotenv.config();
-
+const passport = require('./middleware/passport');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/authMiddleware');
+
+dotenv.config();
 
 const app = express();
 

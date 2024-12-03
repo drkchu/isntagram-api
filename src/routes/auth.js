@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const passport = require('passport');
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -54,17 +55,45 @@ router.post('/login', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    // Check if the user has a password (custom registered user)
+    if (user.password) {
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+    } else {
+      return res.status(400).json({ error: 'This account uses OAuth. Please log in via GitHub.' });
     }
 
-    const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, { expiresIn: process.env.TOKEN_EXPIRY });
+    const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, { expiresIn: process.env.TOKEN_EXPIRY || '1h'});
 
     res.json({ token });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
   }
 });
+
+/*
+
+Login + Signup using GitHub OAuth
+
+*/
+
+// Route to start GitHub authentication
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+
+// Callback route for GitHub to redirect to
+router.get(
+  '/github/callback',
+  passport.authenticate('github', { session: false }),
+  (req, res) => {
+    // Generate a JWT for the authenticated user
+    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.TOKEN_EXPIRY || '1h',
+    });
+
+    res.json({ token });
+  }
+);
 
 module.exports = router;

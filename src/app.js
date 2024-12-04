@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const passport = require('./middleware/passport');
 const authRoutes = require('./routes/auth');
+const postRoutes = require('./routes/posts');
 const authMiddleware = require('./middleware/authMiddleware');
 
 dotenv.config();
@@ -10,10 +11,11 @@ const app = express();
 
 app.use(express.json());
 
-// Public Routes
+// Important routes
+app.use('/posts', postRoutes);
 app.use('/auth', authRoutes);
 
-// Protected Test Route
+// Protected test Route
 app.get('/protected', authMiddleware, (req, res) => {
   res.json({ message: 'This is a protected route', userId: req.userId });
 });

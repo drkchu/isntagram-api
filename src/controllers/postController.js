@@ -58,28 +58,61 @@ exports.getPosts = async (req, res) => {
 
 /**
  * Get a single post by ID
+ * 
+ * Criteria: The authenticated user is the owner of the post ||
+ *           The authenticated user follows the owner of the post, and the post has PRIVATE privacy ||
+ *           The post is public
  */
+
+
 exports.getPostById = async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
 
   try {
+    // Fetch the post and its creator
     const post = await prisma.post.findUnique({
       where: { id },
       include: {
-        _count: {
-          select: { likes: true },
-        },
+        user: { select: { id: true } },
       },
     });
 
-    if (!post || post.userId !== req.userId) {
-      return res.status(404).json({ error: "Post not found or unauthorized" });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Check privacy rules
+    const isPostOwner = post.user.id === userId;
+    const isPublic = post.privacy === 'PUBLIC';
+
+    let isFollowing = false;
+    if (post.privacy === 'PRIVATE') {
+      const followRecord = await prisma.follower.findFirst({
+        where: {
+          followerId: userId,
+          followingId: post.user.id,
+        },
+      });
+      isFollowing = Boolean(followRecord);
+    }
+
+    if (!(isPostOwner || isPublic || isFollowing)) {
+      if (post.privacy === 'PRIVATE') {
+        return res
+          .status(403)
+          .json({ error: 'This post is private. You must follow the user to view it.' });
+      } else {
+        return res
+          .status(403)
+          .json({ error: 'You are not authorized to access this post.' });
+      }
     }
 
     res.json(post);
   } catch (error) {
-    console.error("Error fetching post:", error);
-    res.status(500).json({ error: "Failed to fetch post" });
+    console.error('Error fetching post:', error);
+    res.status(500).json({ error: 'Failed to fetch post' });
   }
 };
 

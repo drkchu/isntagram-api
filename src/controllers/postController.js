@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 /**
@@ -10,7 +10,7 @@ exports.createPost = async (req, res) => {
   try {
     // Ensure an image file was uploaded, Multer does handles this stuff
     if (!req.file) {
-      return res.status(400).json({ error: 'Image is required' });
+      return res.status(400).json({ error: "Image is required" });
     }
 
     // Get the S3 image URL from Multer
@@ -28,8 +28,8 @@ exports.createPost = async (req, res) => {
 
     res.status(201).json(post);
   } catch (error) {
-    console.error('Error creating post:', error);
-    res.status(500).json({ error: 'Failed to create post' });
+    console.error("Error creating post:", error);
+    res.status(500).json({ error: "Failed to create post" });
   }
 };
 
@@ -39,14 +39,20 @@ exports.createPost = async (req, res) => {
 exports.getPosts = async (req, res) => {
   try {
     // Fetch all posts for the logged-in user
+
     const posts = await prisma.post.findMany({
       where: { userId: req.userId },
+      include: {
+        _count: {
+          select: { likes: true }, // Include the like count
+        },
+      },
     });
 
     res.json(posts);
   } catch (error) {
-    console.error('Error fetching posts:', error);
-    res.status(500).json({ error: 'Failed to fetch posts' });
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ error: "Failed to fetch posts" });
   }
 };
 
@@ -57,19 +63,23 @@ exports.getPostById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Fetch the post by ID
     const post = await prisma.post.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: { likes: true },
+        },
+      },
     });
 
     if (!post || post.userId !== req.userId) {
-      return res.status(404).json({ error: 'Post not found or unauthorized' });
+      return res.status(404).json({ error: "Post not found or unauthorized" });
     }
 
     res.json(post);
   } catch (error) {
-    console.error('Error fetching post:', error);
-    res.status(500).json({ error: 'Failed to fetch post' });
+    console.error("Error fetching post:", error);
+    res.status(500).json({ error: "Failed to fetch post" });
   }
 };
 
@@ -86,7 +96,7 @@ exports.updatePost = async (req, res) => {
     });
 
     if (!post || post.userId !== req.userId) {
-      return res.status(404).json({ error: 'Post not found or unauthorized' });
+      return res.status(404).json({ error: "Post not found or unauthorized" });
     }
 
     // Update the post with provided fields
@@ -100,13 +110,14 @@ exports.updatePost = async (req, res) => {
 
     res.json(updatedPost);
   } catch (error) {
-    console.error('Error updating post:', error);
-    res.status(500).json({ error: 'Failed to update post' });
+    console.error("Error updating post:", error);
+    res.status(500).json({ error: "Failed to update post" });
   }
 };
 
 /**
  * Delete a post
+ * TODO: Once a post is deleted, delete the corresponding file stored in AWS S3
  */
 exports.deletePost = async (req, res) => {
   const { id } = req.params;
@@ -117,7 +128,7 @@ exports.deletePost = async (req, res) => {
     });
 
     if (!post || post.userId !== req.userId) {
-      return res.status(404).json({ error: 'Post not found or unauthorized' });
+      return res.status(404).json({ error: "Post not found or unauthorized" });
     }
 
     // Delete the post
@@ -127,7 +138,79 @@ exports.deletePost = async (req, res) => {
 
     res.status(204).send(); // No content
   } catch (error) {
-    console.error('Error deleting post:', error);
-    res.status(500).json({ error: 'Failed to delete post' });
+    console.error("Error deleting post:", error);
+    res.status(500).json({ error: "Failed to delete post" });
+  }
+};
+
+exports.likePost = async (req, res) => {
+  const { id } = req.params; // Post ID
+  const userId = req.userId; // Authenticated User ID
+
+  try {
+    // Check if the post exists
+    const post = await prisma.post.findUnique({
+      where: { id },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Check if the user has already liked the post
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        postId: id,
+        userId,
+      },
+    });
+
+    if (existingLike) {
+      return res
+        .status(400)
+        .json({ error: "You have already liked this post" });
+    }
+
+    // Add a like to the post
+    const like = await prisma.like.create({
+      data: {
+        postId: id,
+        userId,
+      },
+    });
+
+    res.status(201).json(like);
+  } catch (error) {
+    console.error("Error liking post:", error);
+    res.status(500).json({ error: "Failed to like post" });
+  }
+};
+
+exports.unlikePost = async (req, res) => {
+  const { id } = req.params; // Post ID
+  const userId = req.userId; // Authenticated User ID
+
+  try {
+    // Check if the like exists
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        postId: id,
+        userId,
+      },
+    });
+
+    if (!existingLike) {
+      return res.status(404).json({ error: "You have not liked this post" });
+    }
+
+    // Remove the like
+    await prisma.like.delete({
+      where: { id: existingLike.id },
+    });
+
+    res.status(204).send(); // No content
+  } catch (error) {
+    console.error("Error unliking post:", error);
+    res.status(500).json({ error: "Failed to unlike post" });
   }
 };

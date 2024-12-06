@@ -7,6 +7,8 @@ const {
   getPostById,
   updatePost,
   deletePost,
+  likePost,
+  unlikePost
 } = require('../controllers/postController');
 
 const router = express.Router();
@@ -25,5 +27,12 @@ router.patch('/:id', authMiddleware, updatePost);
 
 // Delete a post
 router.delete('/:id', authMiddleware, deletePost);
+
+// Like a post
+router.post('/:id/like', authMiddleware, likePost); 
+
+// Unlike a post
+router.delete('/:id/like', authMiddleware, unlikePost);
+
 
 module.exports = router;

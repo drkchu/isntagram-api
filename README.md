@@ -21,13 +21,13 @@ This is the backend API for my social media app. The API supports user authentic
 | `/auth/github`          | GET              | Redirects the user to GitHub for OAuth authentication.       | ❌                           |
 | `/auth/github/callback` | GET              | Handles the callback from GitHub after OAuth authentication. | ❌                           |
 | `/auth/logout` (TODO)   | POST             | Logs out the currently authenticated user.                   | ✅                           |
-| `/posts`                | POST         | Create a post with an image upload                 |            ✅            |
-| `/posts`                | GET          | Get all posts from the authenticated user          |            ✅            |
-| `/posts/:id`            | GET          | Get a single post by post ID if authorized         |            ✅            |
-| `/posts/:id `           | PATCH        | Update a specific post by ID                       |            ✅            |
-| `/posts/:id`            | DELETE       | Deletes a specific post by ID                      |            ✅            |
-| `/posts/:id/like`       | POST         | Authenticated user likes the specific post by ID   |            ✅            |
-| `/posts/:id/like      ` | DELETE       | Authenticated user unlikes the specific post by ID |            ✅            |
+| `/posts`                | POST             | Create a post with an image upload                           | ✅                           |
+| `/posts`                | GET              | Get all posts from the authenticated user                    | ✅                           |
+| `/posts/:id`            | GET              | Get a single post by post ID if authorized                   | ✅                           |
+| `/posts/:id `           | PATCH            | Update a specific post by ID                                 | ✅                           |
+| `/posts/:id`            | DELETE           | Deletes a specific post by ID                                | ✅                           |
+| `/posts/:id/like`       | POST             | Authenticated user likes the specific post by ID             | ✅                           |
+| `/posts/:id/like      ` | DELETE           | Authenticated user unlikes the specific post by ID           | ✅                           |
 
 ### Users
 

@@ -91,7 +91,7 @@ exports.getPostById = async (req, res) => {
       const followRecord = await prisma.follower.findFirst({
         where: {
           followerId: userId,
-          followingId: post.user.id,
+          followedId: post.user.id, // If followRecord exists, then the userId follows the posts owner
         },
       });
       isFollowing = Boolean(followRecord);

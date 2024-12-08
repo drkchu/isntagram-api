@@ -19,7 +19,7 @@ router.post('/', authMiddleware, upload.single('image'), createPost);
 // Get all posts
 router.get('/', authMiddleware, getPosts);
 
-// Get a specific post by ID
+// Get a specific post by ID, works as long as the appropriate conditions are met
 router.get('/:id', authMiddleware, getPostById);
 
 // Update a post by ID, using Patch since we might only change a piece of a post, not the entire things

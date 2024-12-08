@@ -34,12 +34,28 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save the user
-    const newUser = await prisma.user.create({
-      data: { username, email, password: hashedPassword },
+    // Start a transaction to ensure both user and profile are created
+    const user = await prisma.$transaction(async (tx) => {
+      // Create the user
+      const newUser = await tx.user.create({
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+        },
+      });
+
+      // Create the profile linked to the new user
+      await tx.profile.create({
+        data: {
+          userId: newUser.id,
+        },
+      });
+
+      return newUser;
     });
 
-    res.status(201).json({ message: 'User registered successfully', user: newUser });
+    res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
     res.status(500).json({ error: 'Registration failed' });
   }

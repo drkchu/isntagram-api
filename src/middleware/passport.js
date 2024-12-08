@@ -10,35 +10,43 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/auth/github/callback',
+      callbackURL: '/auth/github/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Find or create the user in your database
-        const { id, username, emails } = profile;
-
-        // Use the first email if it exists, otherwise null
-        const email = emails && emails.length > 0 ? emails[0].value : null;
-
+        // Check if the user already exists
         let user = await prisma.user.findUnique({
-          where: { githubId: id },
+          where: { githubId: profile.id },
         });
 
         if (!user) {
-          // If user does not exist, create a new one
-          user = await prisma.user.create({
-            data: {
-              username: username || `github_user_${id}`,
-              email: email,
-              githubId: id,
-            },
+          // Start a transaction to create user and profile together
+          user = await prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+              data: {
+                githubId: profile.id,
+                username: profile.username,
+                email: profile.emails[0].value, // GitHub email
+              },
+            });
+
+            // Create the profile linked to the new user
+            await tx.profile.create({
+              data: {
+                userId: newUser.id,
+                avatarUrl: profile.photos[0].value, // GitHub profile picture
+              },
+            });
+
+            return newUser;
           });
         }
 
-        // Return the user object
-        done(null, user);
+        // Pass the user to the callback
+        return done(null, user);
       } catch (error) {
-        done(error, null);
+        console.error('Error in GitHub strategy:', error);
+        return done(error, null);
       }
     }
   )

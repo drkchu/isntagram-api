@@ -29,8 +29,8 @@ This is the backend API for my social media app. The API supports user authentic
 | `/posts/:id/like`       | POST             | Authenticated user likes the specific post by ID             | ✅                           |
 | `/posts/:id/like      ` | DELETE           | Authenticated user unlikes the specific post by ID           | ✅                           |
 
-### Users
-
 ## Development
 
 ## Future Steps
+
+idk

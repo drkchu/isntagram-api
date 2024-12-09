@@ -14,7 +14,7 @@ app.use(express.json());
 
 app.use('/posts', postRoutes);
 app.use('/auth', authRoutes);
-// app.use('/users', userRoutes);
+app.use('/users', userRoutes);
 
 // Start the server only when this file is executed directly
 if (require.main === module) {

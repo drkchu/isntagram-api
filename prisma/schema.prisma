@@ -47,7 +47,7 @@ model Profile {
   website   String?
   createdAt DateTime @default(now())
 
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Follower {
@@ -56,8 +56,8 @@ model Follower {
   followedId String
   createdAt  DateTime @default(now())
 
-  follower   User     @relation("FollowersAsFollower", fields: [followerId], references: [id])
-  followed   User     @relation("FollowersAsFollowed", fields: [followedId], references: [id])
+  follower   User     @relation("FollowersAsFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followed   User     @relation("FollowersAsFollowed", fields: [followedId], references: [id], onDelete: Cascade)
 }
 
 model Post {
@@ -81,9 +81,9 @@ model Comment {
   content   String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
-  parent    Comment? @relation("NestedComments", fields: [parentId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent    Comment? @relation("NestedComments", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("NestedComments")
 }
 
@@ -112,8 +112,8 @@ model ConversationParticipant {
   userId         String
   joinedAt       DateTime     @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -124,6 +124,6 @@ model Message {
   createdAt      DateTime     @default(now())
   isRead         Boolean      @default(false)
 
-  sender         User         @relation(fields: [senderId], references: [id])
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

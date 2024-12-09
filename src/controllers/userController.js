@@ -21,7 +21,62 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Public, just shares their profile information (fine since posts are the ones where visibility is important)
+exports.getAuthenticatedUser = async (req, res) => {
+  const userId = req.userId;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+
+    if (!user) return res.status(404).json({ error: "User not found!!" });
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching authenticated user:", error);
+    res.status(500).json({ error: "Failed to fetch authenticated user." });
+  }
+};
+
+exports.searchUsers = async (req, res) => {
+  if (
+    !req.query.hasOwnProperty("username") &&
+    !req.query.hasOwnProperty("email")
+  ) {
+    return res
+      .status(400)
+      .json({ error: "Username or email query parameter is required." });
+  }
+
+  const { email, username } = req.query;
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: username, mode: "insensitive" } },
+          { email: { contains: email, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        profile: {
+          select: {
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching users:", error);
+    res.status(500).json({ error: "Failed to search users." });
+  }
+};
+
+// Public, just shares their profile information
 exports.getUserById = async (req, res) => {
   const { userId } = req.params;
   try {
@@ -43,23 +98,6 @@ exports.getUserById = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Failed to fetch user." });
-  }
-};
-
-exports.getAuthenticatedUser = async (req, res) => {
-  const userId = req.userId;
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { profile: true },
-    });
-
-    if (!user) return res.status(404).json({ error: "User not found!!" });
-
-    res.json(user);
-  } catch (error) {
-    console.error("Error fetching authenticated user:", error);
-    res.status(500).json({ error: "Failed to fetch authenticated user." });
   }
 };
 
@@ -152,6 +190,29 @@ exports.updateUserProfile = async (req, res) => {
   }
 };
 
+exports.deleteUser = async (req, res) => {
+    const { userId } = req.params;
+  
+    // Check if the requester is authorized
+    if (req.userId !== userId && !req.isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this user." });
+    }
+  
+    try {
+      // Delete the user (since I'm using cascading deletes, all the associated relationships are handled, hopefully LOL)
+      await prisma.user.delete({
+        where: { id: userId },
+      });
+  
+      res.json({ message: "User deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Failed to delete user." });
+    }
+  };
+
 exports.followUser = async (req, res) => {
   const followerId = req.userId;
   const { userId: followedId } = req.params;
@@ -186,88 +247,30 @@ exports.unfollowUser = async (req, res) => {
   }
 };
 
-exports.deleteUser = async (req, res) => {
-  const { userId } = req.params;
-
-  // Check if the requester is authorized
-  if (req.userId !== userId && !req.isAdmin) {
-    return res
-      .status(403)
-      .json({ error: "You are not authorized to delete this user." });
-  }
-
-  try {
-    // Delete the user (since I'm using cascading deletes, all the associated relationships are handled, hopefully LOL)
-    await prisma.user.delete({
-      where: { id: userId },
-    });
-
-    res.json({ message: "User deleted successfully." });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ error: "Failed to delete user." });
-  }
-};
-
-exports.searchUsers = async (req, res) => {
-
-  if (!req.query.hasOwnProperty("username") && !(req.query.hasOwnProperty("email"))) {
-    return res.status(400).json({ error: "Username or email query parameter is required." });
-  }
-
-  const { email, username } = req.query;
-
-  try {
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          { username: { contains: username, mode: "insensitive" } },
-          { email: { contains: email, mode: "insensitive" } },
-        ],
-      },
-      select: {
-        id: true,
-        username: true,
-        profile: {
-          select: {
-            avatarUrl: true,
-          },
-        },
-      },
-    });
-
-    res.json(users);
-  } catch (error) {
-    console.error("Error searching users:", error);
-    res.status(500).json({ error: "Failed to search users." });
-  }
-};
-
 exports.updateUserRole = async (req, res) => {
-    const { userId } = req.params;
-    const { isAdmin } = req.body;
-  
-    if (typeof isAdmin !== 'boolean') {
-      return res.status(400).json({ error: 'isAdmin must be a boolean.' });
-    }
-  
-    try {
-      const user = await prisma.user.update({
-        where: { id: userId },
-        data: { isAdmin },
-      });
-  
-      res.json({
-        message: `User role updated successfully.`,
-        user: {
-          id: user.id,
-          username: user.username,
-          isAdmin: user.isAdmin,
-        },
-      });
-    } catch (error) {
-      console.error('Error updating user role:', error);
-      res.status(500).json({ error: 'Failed to update user role.' });
-    }
-  };
-  
+  const { userId } = req.params;
+  const { isAdmin } = req.body;
+
+  if (typeof isAdmin !== "boolean") {
+    return res.status(400).json({ error: "isAdmin must be a boolean." });
+  }
+
+  try {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { isAdmin },
+    });
+
+    res.json({
+      message: `User role updated successfully.`,
+      user: {
+        id: user.id,
+        username: user.username,
+        isAdmin: user.isAdmin,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ error: "Failed to update user role." });
+  }
+};

@@ -14,20 +14,31 @@ This is the backend API for my social media app. The API supports user authentic
 
 ## Endpoints
 
-| **Endpoint**            | **HTTP Request** | **Description**                                              | **Requires Authentication?** |
-| ----------------------- | ---------------- | ------------------------------------------------------------ | ---------------------------- |
-| `/auth/register`        | POST             | Registers a new user with email and password.                | ❌                           |
-| `/auth/login`           | POST             | Logs in a user with email and password.                      | ❌                           |
-| `/auth/github`          | GET              | Redirects the user to GitHub for OAuth authentication.       | ❌                           |
-| `/auth/github/callback` | GET              | Handles the callback from GitHub after OAuth authentication. | ❌                           |
-| `/auth/logout` (TODO)   | POST             | Logs out the currently authenticated user.                   | ✅                           |
-| `/posts`                | POST             | Create a post with an image upload                           | ✅                           |
-| `/posts`                | GET              | Get all posts from the authenticated user                    | ✅                           |
-| `/posts/:id`            | GET              | Get a single post by post ID if authorized                   | ✅                           |
-| `/posts/:id `           | PATCH            | Update a specific post by ID                                 | ✅                           |
-| `/posts/:id`            | DELETE           | Deletes a specific post by ID                                | ✅                           |
-| `/posts/:id/like`       | POST             | Authenticated user likes the specific post by ID             | ✅                           |
-| `/posts/:id/like      ` | DELETE           | Authenticated user unlikes the specific post by ID           | ✅                           |
+| **Endpoint**            | **HTTP Request** | **Description**                                              | **Requires Authentication?** | **Requires Admin?** |
+| ----------------------- | ---------------- | ------------------------------------------------------------ | :--------------------------: | :-----------------: |
+| `/auth/register`        | POST             | Registers a new user with email and password.                |              ❌              |         ❌          |
+| `/auth/login`           | POST             | Logs in a user with email and password.                      |              ❌              |         ❌          |
+| `/auth/github`          | GET              | Redirects the user to GitHub for OAuth authentication.       |              ❌              |         ❌          |
+| `/auth/github/callback` | GET              | Handles the callback from GitHub after OAuth authentication. |              ❌              |         ❌          |
+| `/auth/logout` (!!!)    | POST             | Logs out the currently authenticated user.                   |              ✅              |         ❌          |
+| `/posts`                | POST             | Create a post with an image upload                           |              ✅              |         ❌          |
+| `/posts`                | GET              | Get all posts from the authenticated user                    |              ✅              |         ❌          |
+| `/posts/:id`            | GET              | Get a single post by post ID if authorized                   |              ✅              |         ❌          |
+| `/posts/:id `           | PATCH            | Update a specific post by ID                                 |              ✅              |         ❌          |
+| `/posts/:id`            | DELETE           | Deletes a specific post by ID                                |              ✅              |         ❌          |
+| `/posts/:id/like`       | POST             | Authenticated user likes the specific post by ID             |              ✅              |         ❌          |
+| `/posts/:id/like`       | DELETE           | Authenticated user unlikes the specific post by ID           |              ✅              |         ❌          |
+| `/users/`               | GET              | Get information from all users, no passwords                 |              ✅              |         ✅          |
+| `/users/self`           | GET              | Get information for the authenticated user                   |              ✅              |         ❌          |
+| `/users/search`         | GET              | Search based on email or username                            |              ❌              |         ❌          |
+| `/users/:id`            | GET              | Get a user's profile information                             |              ❌              |         ❌          |
+| `/users/:id/followers`  | GET              | Get a user's followers information (id, username, profile)   |              ❌              |         ❌          |
+| `/users/:id/following`  | GET              | Get a user's following information (id, username, profile)   |              ❌              |         ❌          |
+| `/:userId/profile`      | PATCH            | Update's a user's profile information                        |              ✅              |         ❌          |
+| `/:userId`              | DELETE           | Delete's a user, either self delete or admin deletion        |              ✅              |         ❌          |
+| `/:userId/follow`       | POST             | The authenticated user follows the user w/ userId            |              ✅              |         ❌          |
+| `/:userId/unfollow`     | POST             | The authenticated user unfollows the user w/ userId          |              ✅              |         ❌          |
+| `/:userId/role`         | PATCH            | Update the role of a user (admin or nah)                     |              ✅              |         ✅          |
 
 ## Development
 

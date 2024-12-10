@@ -1,5 +1,4 @@
 const express = require('express');
-const commentController = require('../controllers/commentController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const {
@@ -9,7 +8,7 @@ const {
     deleteComment,
   } = require("../controllers/commentController");
   
-  const router = express.Router();
+const router = express.Router();
 
 router.get('/:postId', authMiddleware, getCommentsByPost); // Get comments for a specific post (Public)
 router.post('/:postId', authMiddleware, addComment); // Add a new comment (Authenticated users)

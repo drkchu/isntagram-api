@@ -97,7 +97,7 @@ exports.getPostById = async (req, res) => {
       isFollowing = Boolean(followRecord);
     }
 
-    if (!(isPostOwner || isPublic || isFollowing)) {
+    if (!(isPostOwner || isPublic || isFollowing || req.isAdmin)) {
       if (post.privacy === 'PRIVATE') {
         return res
           .status(403)

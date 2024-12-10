@@ -4,6 +4,7 @@ const passport = require('./middleware/passport');
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
+const commentRoutes = require('./routes/comments');
 const authMiddleware = require('./middleware/authMiddleware');
 
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/posts', postRoutes);
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/comments', commentRoutes)
 
 // Start the server only when this file is executed directly
 if (require.main === module) {

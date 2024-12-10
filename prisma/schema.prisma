@@ -23,31 +23,32 @@ model User {
   id        String   @id @default(uuid())
   username  String
   email     String?  @unique
-  password  String?  // Since some people are gonna login with GitHub OAuth   
+  password  String? // Since some people are gonna login with GitHub OAuth   
   githubId  String?  @unique
-  isAdmin   Boolean  @default(false) 
+  isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  profile   Profile?
-  posts     Post[]
-  comments  Comment[]
-  likes     Like[]
-  followers Follower[] @relation("FollowersAsFollowed")
-  following Follower[] @relation("FollowersAsFollower")
-  messages  Message[]
+  profile       Profile?
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  followers     Follower[]                @relation("FollowersAsFollowed")
+  following     Follower[]                @relation("FollowersAsFollower")
+  messages      Message[]
   conversations ConversationParticipant[]
+  Conversation  Conversation[]
 }
 
 model Profile {
-  id        String  @id @default(uuid())
-  userId    String  @unique
+  id        String   @id @default(uuid())
+  userId    String   @unique
   bio       String?
   avatarUrl String?
   location  String?
   website   String?
   createdAt DateTime @default(now())
 
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Follower {
@@ -56,35 +57,35 @@ model Follower {
   followedId String
   createdAt  DateTime @default(now())
 
-  follower   User     @relation("FollowersAsFollower", fields: [followerId], references: [id], onDelete: Cascade)
-  followed   User     @relation("FollowersAsFollowed", fields: [followedId], references: [id], onDelete: Cascade)
+  follower User @relation("FollowersAsFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followed User @relation("FollowersAsFollowed", fields: [followedId], references: [id], onDelete: Cascade)
 }
 
 model Post {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
   content   String
   imageUrl  String?
   privacy   Privacy
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments  Comment[]
-  likes     Like[]
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    Like[]
 }
 
 model Comment {
   id        String   @id @default(uuid())
   postId    String
   userId    String
-  parentId  String?  // For nested comments
+  parentId  String? // For nested comments
   content   String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent    Comment? @relation("NestedComments", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("NestedComments")
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("NestedComments", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("NestedComments")
 }
 
 model Like {
@@ -93,37 +94,40 @@ model Like {
   userId    String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {
-  id         String                 @id @default(uuid())
-  name       String?
-  createdAt  DateTime               @default(now())
-  updatedAt  DateTime               @default(now())
-  messages   Message[]
+  id        String   @id @default(uuid())
+  isGroup   Boolean  @default(false)
+  name      String? // Group name (if isGroup = true)
+  creatorId String
+  createdAt DateTime @default(now())
+
+  creator      User                      @relation(fields: [creatorId], references: [id])
   participants ConversationParticipant[]
+  messages     Message[]
 }
 
 model ConversationParticipant {
-  id             String       @id @default(uuid())
+  id             String @id @default(uuid())
   conversationId String
   userId         String
-  joinedAt       DateTime     @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
 }
 
 model Message {
-  id             String       @id @default(uuid())
+  id             String   @id @default(uuid())
   conversationId String
   senderId       String
   content        String
-  createdAt      DateTime     @default(now())
-  isRead         Boolean      @default(false)
+  createdAt      DateTime @default(now())
 
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

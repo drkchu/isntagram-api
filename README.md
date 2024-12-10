@@ -29,20 +29,21 @@ This is the backend API for my social media app. The API supports user authentic
 | `/posts/:id/like`        | POST             | Authenticated user likes the specific post by ID             |              ✅              |         ❌          |
 | `/posts/:id/like`        | DELETE           | Authenticated user unlikes the specific post by ID           |              ✅              |         ❌          |
 | `/users/`                | GET              | Get information from all users, no passwords                 |              ✅              |         ✅          |
+| `/users/` (!!!)          | PATCH            | Update user information, admins can too                      |              ✅              |         ❌          |
 | `/users/self`            | GET              | Get information for the authenticated user                   |              ✅              |         ❌          |
 | `/users/search`          | GET              | Search based on email or username                            |              ❌              |         ❌          |
 | `/users/:id`             | GET              | Get a user's profile information                             |              ❌              |         ❌          |
 | `/users/:id/followers`   | GET              | Get a user's followers information (id, username, profile)   |              ❌              |         ❌          |
 | `/users/:id/following`   | GET              | Get a user's following information (id, username, profile)   |              ❌              |         ❌          |
-| `users/:userId/profile`  | PATCH            | Update's a user's profile information                        |              ✅              |         ❌          |
-| `users/:userId`          | DELETE           | Delete's a user, either self delete or admin deletion        |              ✅              |         ❌          |
-| `users/:userId/follow`   | POST             | The authenticated user follows the user w/ userId            |              ✅              |         ❌          |
-| `users/:userId/unfollow` | POST             | The authenticated user unfollows the user w/ userId          |              ✅              |         ❌          |
-| `users/:userId/role`     | PATCH            | Update the role of a user (admin or nah)                     |              ✅              |         ✅          |
-| `comments/:postId`       | GET              | Get all the comments on a post if authorized                 |              ✅              |         ❌          |
-| `comments/:postId`       | POST             | Post a comment to a post, optional parent                    |              ✅              |         ❌          |
-| `comments/:commentId`    | PATCH            | Update a specific comment                                    |              ✅              |         ✅          |
-| `comments/:commentId`    | DELETE           | Delete a specific comment, admins can too                    |              ✅              |         ❌          |
+| `/users/:userId/profile`  | PATCH            | Update's a user's profile information                        |              ✅              |         ❌          |
+| `/users/:userId`          | DELETE           | Delete's a user, either self delete or admin deletion        |              ✅              |         ❌          |
+| `/users/:userId/follow`   | POST             | The authenticated user follows the user w/ userId            |              ✅              |         ❌          |
+| `/users/:userId/unfollow` | POST             | The authenticated user unfollows the user w/ userId          |              ✅              |         ❌          |
+| `/users/:userId/role`     | PATCH            | Update the role of a user (admin or nah)                     |              ✅              |         ✅          |
+| `/comments/:postId`       | GET              | Get all the comments on a post if authorized                 |              ✅              |         ❌          |
+| `/comments/:postId`       | POST             | Post a comment to a post, optional parent                    |              ✅              |         ❌          |
+| `/comments/:commentId`    | PATCH            | Update a specific comment                                    |              ✅              |         ✅          |
+| `/comments/:commentId`    | DELETE           | Delete a specific comment, admins can too                    |              ✅              |         ❌          |
 
 ## Development
 

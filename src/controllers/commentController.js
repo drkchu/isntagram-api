@@ -106,12 +106,10 @@ exports.addComment = async (req, res) => {
 
     if (!(isPostOwner || isPublic || isFollowing)) {
       if (post.privacy === "PRIVATE") {
-        return res
-          .status(403)
-          .json({
-            error:
-              "This post is private. You must follow the user to comment on it.",
-          });
+        return res.status(403).json({
+          error:
+            "This post is private. You must follow the user to comment on it.",
+        });
       } else {
         return res
           .status(403)
@@ -170,6 +168,10 @@ exports.updateComment = async (req, res) => {
         .status(403)
         .json({ error: "You are not authorized to update this comment." });
     }
+
+    if (comment.post.privacy === 'RESTRICTED') {
+        return res.status(403).json({ error: 'You cannot update a comment on a restricted post.' });
+      }
 
     const updatedComment = await prisma.comment.update({
       where: { id: commentId },

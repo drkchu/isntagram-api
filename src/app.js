@@ -5,6 +5,7 @@ const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
 const commentRoutes = require("./routes/comments");
 const chatRoutes = require("./routes/chats");
+const passport = require('./middleware/passport');
 
 dotenv.config();
 

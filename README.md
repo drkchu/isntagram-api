@@ -4,9 +4,9 @@ This is the backend API for my social media app. The API supports user authentic
 
 ## ER Diagram
 
-| ![Project Architecture](assets/er_diagram.png) | 
-|:--:| 
-| *In practice, the schemas might (slightly) differ* |
+|   ![Project Architecture](assets/er_diagram.png)   |
+| :------------------------------------------------: |
+| _In practice, the schemas might (slightly) differ_ |
 
 ## Features
 
@@ -25,6 +25,7 @@ This is the backend API for my social media app. The API supports user authentic
 | `/auth/logout` (!!!)         | POST             | Logs out the currently authenticated user.                        |              ✅              |         ❌          |
 | `/posts`                     | POST             | Create a post with an image upload                                |              ✅              |         ❌          |
 | `/posts`                     | GET              | Get all posts from the authenticated user                         |              ✅              |         ❌          |
+| `/posts/following` (!!!)     | GET              | Get posts that the authenticated user follows                     |              ✅              |         ❌          |
 | `/posts/:id`                 | GET              | Get a single post by post ID if authorized                        |              ✅              |         ❌          |
 | `/posts/:id `                | PATCH            | Update a specific post by ID                                      |              ✅              |         ❌          |
 | `/posts/:id`                 | DELETE           | Deletes a specific post by ID                                     |              ✅              |         ❌          |

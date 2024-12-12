@@ -5,7 +5,9 @@ const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
 const commentRoutes = require("./routes/comments");
 const chatRoutes = require("./routes/chats");
-const passport = require('./middleware/passport');
+const cors = require("cors");
+
+require('./middleware/passport'); // Got Github OAuth
 
 dotenv.config();
 
@@ -19,6 +21,8 @@ const io = new Server(server);        // Attach Socket.IO to the server
 app.set('socketio', io);
 
 app.use(express.json());
+
+app.use(cors());
 
 app.use("/posts", postRoutes);
 app.use("/auth", authRoutes);

@@ -46,6 +46,9 @@ exports.getPosts = async (req, res) => {
         _count: {
           select: { likes: true }, // Include the like count
         },
+        user: {
+          select: { username: true }, // Include posts owners username
+        },
       },
     });
 
@@ -75,6 +78,9 @@ exports.getPostById = async (req, res) => {
       where: { id },
       include: {
         user: { select: { id: true } },
+      },
+      user: {
+        select: { username: true }, // Include posts owners username
       },
     });
 

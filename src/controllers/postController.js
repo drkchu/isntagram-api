@@ -50,6 +50,9 @@ exports.getPosts = async (req, res) => {
           select: { username: true }, // Include posts owners username
         },
       },
+      orderBy: {
+        createdAt: "desc", // Order by createdAt in descending order (most recent first)
+      },
     });
 
     res.json(posts);
@@ -61,12 +64,11 @@ exports.getPosts = async (req, res) => {
 
 /**
  * Get a single post by ID
- * 
+ *
  * Criteria: The authenticated user is the owner of the post ||
  *           The authenticated user follows the owner of the post, and the post has PRIVATE privacy ||
  *           The post is public
  */
-
 
 exports.getPostById = async (req, res) => {
   const { id } = req.params;
@@ -77,23 +79,22 @@ exports.getPostById = async (req, res) => {
     const post = await prisma.post.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true } },
-      },
-      user: {
-        select: { username: true }, // Include posts owners username
+        user: {
+          select: { username: true }, // Include posts owners username
+        },
       },
     });
 
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     // Check privacy rules
     const isPostOwner = post.user.id === userId;
-    const isPublic = post.privacy === 'PUBLIC';
+    const isPublic = post.privacy === "PUBLIC";
 
     let isFollowing = false;
-    if (post.privacy === 'PRIVATE') {
+    if (post.privacy === "PRIVATE") {
       const followRecord = await prisma.follower.findFirst({
         where: {
           followerId: userId,
@@ -104,23 +105,61 @@ exports.getPostById = async (req, res) => {
     }
 
     if (!(isPostOwner || isPublic || isFollowing || req.isAdmin)) {
-      if (post.privacy === 'PRIVATE') {
-        return res
-          .status(403)
-          .json({ error: 'This post is private. You must follow the user to view it.' });
+      if (post.privacy === "PRIVATE") {
+        return res.status(403).json({
+          error: "This post is private. You must follow the user to view it.",
+        });
       } else {
         return res
           .status(403)
-          .json({ error: 'You are not authorized to access this post.' });
+          .json({ error: "You are not authorized to access this post." });
       }
     }
 
     res.json(post);
   } catch (error) {
-    console.error('Error fetching post:', error);
-    res.status(500).json({ error: 'Failed to fetch post' });
+    console.error("Error fetching post:", error);
+    res.status(500).json({ error: "Failed to fetch post" });
   }
 };
+
+exports.getPostsFromFollowedUsers = async (req, res) => {
+  const { limit = 10 } = req.query; // Default limit is 10
+  const userId = req.userId; // Assuming the userId is set by an authentication middleware
+
+  try {
+    // Get the IDs of users the current user is following
+    const followedUsers = await prisma.follower.findMany({
+      where: { followerId: userId },
+      select: { followedId: true },
+    });
+
+    const followedUserIds = followedUsers.map((user) => user.followedId);
+
+    // Fetch posts from followed users, ordered by creation date
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: { in: followedUserIds },
+      },
+      include: {
+        _count: {
+          select: { likes: true }, // Include the like count
+        },
+        user: {
+          select: { username: true }, // Include the username of the post owner
+        },
+      },
+      orderBy: { createdAt: "desc" }, // Reverse chronological order
+      take: parseInt(limit, 10), // Limit the number of posts returned
+    });
+
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching posts from followed users:", error);
+    res.status(500).json({ error: "Failed to fetch posts" });
+  }
+};
+
 
 /**
  * Update a post

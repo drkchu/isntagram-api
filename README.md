@@ -105,7 +105,6 @@ TOKEN_EXPIRY="1h"
 JWT_SECRET=[something_long_and_secure_from_crypto]
 
 # AWS S3 Stuff
-
 AWS_REGION=[your_region]
 AWS_ACCESS_KEY_ID=[your_iam_access_key]
 AWS_SECRET_ACCESS_KEY=[your_iam_secret_access_key]

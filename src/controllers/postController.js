@@ -37,11 +37,13 @@ exports.createPost = async (req, res) => {
  * Get all posts for the authenticated user
  */
 exports.getPosts = async (req, res) => {
+  const userId = req.userId;
+
   try {
     // Fetch all posts for the logged-in user
 
     const posts = await prisma.post.findMany({
-      where: { userId: req.userId },
+      where: { userId},
       include: {
         _count: {
           select: { likes: true }, // Include the like count
@@ -55,7 +57,25 @@ exports.getPosts = async (req, res) => {
       },
     });
 
-    res.json(posts);
+    const postIds = posts.map((post) => post.id);
+
+    const likedPosts = await prisma.like.findMany({
+      where: {
+        postId: { in: postIds },
+        userId,
+      },
+      select: { postId: true },
+    });
+
+    // Create a set of post IDs that the user liked
+    const likedPostIds = new Set(likedPosts.map((like) => like.postId));
+
+    const postsWithLikeStatus = posts.map((post) => ({
+      ...post,
+      isLiked: likedPostIds.has(post.id),
+    }));
+
+    res.json(postsWithLikeStatus);
   } catch (error) {
     console.error("Error fetching posts:", error);
     res.status(500).json({ error: "Failed to fetch posts" });
@@ -89,6 +109,16 @@ exports.getPostById = async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
+    // Check if the authenticated user has liked the post
+    const likeRecord = await prisma.like.findFirst({
+      where: {
+        postId: id,
+        userId,
+      },
+    });
+
+    const isLiked = Boolean(likeRecord);
+
     // Check privacy rules
     const isPostOwner = post.user.id === userId;
     const isPublic = post.privacy === "PUBLIC";
@@ -116,7 +146,7 @@ exports.getPostById = async (req, res) => {
       }
     }
 
-    res.json(post);
+    res.json({ ...post, isLiked });
   } catch (error) {
     console.error("Error fetching post:", error);
     res.status(500).json({ error: "Failed to fetch post" });
@@ -125,7 +155,7 @@ exports.getPostById = async (req, res) => {
 
 exports.getPostsFromFollowedUsers = async (req, res) => {
   const { limit = 10 } = req.query; // Default limit is 10
-  const userId = req.userId; // Assuming the userId is set by an authentication middleware
+  const userId = req.userId;
 
   try {
     // Get the IDs of users the current user is following
@@ -153,13 +183,30 @@ exports.getPostsFromFollowedUsers = async (req, res) => {
       take: parseInt(limit, 10), // Limit the number of posts returned
     });
 
-    res.json(posts);
+    // Fetch like status for each post
+    const postIds = posts.map((post) => post.id);
+    const likedPosts = await prisma.like.findMany({
+      where: {
+        postId: { in: postIds },
+        userId,
+      },
+      select: { postId: true },
+    });
+
+    const likedPostIds = new Set(likedPosts.map((like) => like.postId));
+
+    // Add `isLiked` to each post
+    const postsWithLikeStatus = posts.map((post) => ({
+      ...post,
+      isLiked: likedPostIds.has(post.id),
+    }));
+
+    res.json(postsWithLikeStatus);
   } catch (error) {
     console.error("Error fetching posts from followed users:", error);
     res.status(500).json({ error: "Failed to fetch posts" });
   }
 };
-
 
 /**
  * Update a post

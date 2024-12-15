@@ -16,7 +16,7 @@ const {
 const router = express.Router();
 
 router.post("/", authMiddleware, upload.single("image"), createPost); // Create a post with an image upload
-router.get("/", authMiddleware, getPosts); // Get all posts
+router.get("/", authMiddleware, getPosts); // Get all posts from the authenticated user
 router.get("/following", authMiddleware, getPostsFromFollowedUsers)
 router.get("/:id", authMiddleware, getPostById); // Get a specific post by ID if authorized
 router.patch("/:id", authMiddleware, updatePost); // Update a post by ID

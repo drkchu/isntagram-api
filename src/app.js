@@ -7,7 +7,7 @@ const commentRoutes = require("./routes/comments");
 const chatRoutes = require("./routes/chats");
 const cors = require("cors");
 
-require('./middleware/passport'); // Got Github OAuth
+require('./middleware/passport');
 
 dotenv.config();
 
@@ -50,7 +50,7 @@ io.on("connection", (socket) => {
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 

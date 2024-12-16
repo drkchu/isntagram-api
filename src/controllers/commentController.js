@@ -52,10 +52,6 @@ exports.getCommentsByPost = async (req, res) => {
       include: {
         user: {
           select: { id: true, username: true },
-          replies: {
-            include: { user: { select: { id: true, username: true } } },
-            orderBy: { createdAt: "asc" },
-          },
         },
       },
       orderBy: { createdAt: "asc" }, // Oldest comments first

@@ -4,7 +4,7 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 
 const {
   getAllUsers,
-  getUserById,
+  getUserProfileById,
   getAuthenticatedUser,
   getUserFollowers,
   getUserFollowing,
@@ -21,7 +21,7 @@ const router = express.Router();
 router.get("/", authMiddleware, adminMiddleware, getAllUsers); // Admin-only
 router.get("/self", authMiddleware, getAuthenticatedUser); // Authenticated users only
 router.get("/search", searchUsers); // Public
-router.get("/:userId", getUserById); // Public
+router.get("/:userId", getUserProfileById); // Public
 router.get("/:userId/followers", getUserFollowers); // Public
 router.get("/:userId/following", getUserFollowing); // Public
 router.patch("/:userId/profile", authMiddleware, updateUserProfile); // Authenticated users only

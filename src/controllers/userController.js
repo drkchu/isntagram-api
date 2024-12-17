@@ -77,7 +77,7 @@ exports.searchUsers = async (req, res) => {
 };
 
 // Public, just shares their profile information
-exports.getUserById = async (req, res) => {
+exports.getUserProfileById = async (req, res) => {
   const { userId } = req.params;
   try {
     const user = await prisma.user.findUnique({
@@ -87,14 +87,7 @@ exports.getUserById = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: "User not found." });
 
-    res.json({
-      id: user.id,
-      username: user.username,
-      bio: user.profile?.bio,
-      avatarUrl: user.profile?.avatarUrl,
-      location: user.profile?.location,
-      website: user.profile?.website,
-    });
+    res.json({user});
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Failed to fetch user." });

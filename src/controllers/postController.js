@@ -153,6 +153,52 @@ exports.getPostById = async (req, res) => {
   }
 };
 
+/**
+ * Get all posts from a specific user that the authenticated user is allowed to see
+ */
+exports.getPostsByUser = async (req, res) => {
+  const { userId } = req.params;
+  const authUserId = req.userId;
+
+  try {
+    // Check if the authenticated user follows the given user
+    const followRecord = await prisma.follower.findFirst({
+      where: {
+        followerId: authUserId,
+        followedId: userId,
+      },
+    });
+
+    const isFollowing = Boolean(followRecord);
+
+    // Fetch posts based on the following status
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: userId,
+        OR: [
+          { privacy: "PUBLIC" }, // Public posts
+          { privacy: "PRIVATE", userId: authUserId }, // Private posts owned by the authenticated user
+          ...(isFollowing ? [{ privacy: "PRIVATE" }] : []), // Include private posts if following
+        ],
+      },
+      include: {
+        _count: {
+          select: { likes: true },
+        },
+        user: {
+          select: { username: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching posts by user:", error);
+    res.status(500).json({ error: "Failed to fetch posts" });
+  }
+};
+
 exports.getPostsFromFollowedUsers = async (req, res) => {
   const { limit = 10 } = req.query; // Default limit is 10
   const userId = req.userId;
@@ -173,14 +219,14 @@ exports.getPostsFromFollowedUsers = async (req, res) => {
       },
       include: {
         _count: {
-          select: { likes: true }, // Include the like count
+          select: { likes: true },
         },
         user: {
-          select: { username: true }, // Include the username of the post owner
+          select: { username: true },
         },
       },
-      orderBy: { createdAt: "desc" }, // Reverse chronological order
-      take: parseInt(limit, 10), // Limit the number of posts returned
+      orderBy: { createdAt: "desc" },
+      take: parseInt(limit, 10),
     });
 
     // Fetch like status for each post

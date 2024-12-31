@@ -29,6 +29,7 @@ Here's the [frontend](https://github.com/drkchu/isntagram) repo
 | `/posts`                     | GET              | Get all posts from the authenticated user                         |              ✅              |         ❌          |
 | `/posts/following` (!!!)     | GET              | Get posts that the authenticated user follows                     |              ✅              |         ❌          |
 | `/posts/:id`                 | GET              | Get a single post by post ID if authorized                        |              ✅              |         ❌          |
+| `/posts/user/:userId`        | GET              | Get posts posts from the userId if authorized                     |              ✅              |         ❌          |
 | `/posts/:id `                | PATCH            | Update a specific post by ID                                      |              ✅              |         ❌          |
 | `/posts/:id`                 | DELETE           | Deletes a specific post by ID                                     |              ✅              |         ❌          |
 | `/posts/:id/like`            | POST             | Authenticated user likes the specific post by ID                  |              ✅              |         ❌          |
@@ -154,12 +155,14 @@ npx prisma migrate dev --name init
 - Click Register application to complete the process.
 - Add your `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to `.env`
 
-### 6. Setting JWT 
+### 6. Setting JWT
+
 - Populate the values `TOKEN_EXPIRY` and `TOKEN_SECRET` in `.env`
   - `TOKEN_SECRET` is used to authenticate tokens, so make sure that this is secure
 - Feel free to use the script below in the node runtime, to generate a token secret to use
+
 ```node
-require('crypto').randomBytes(64).toString('hex')
+require("crypto").randomBytes(64).toString("hex");
 ```
 
 ### 7. Setting up AWS S3 for image storage
@@ -175,13 +178,13 @@ require('crypto').randomBytes(64).toString('hex')
 
 - In the S3 console, click on Create bucket.
 - Configure the bucket settings:
+
   - Bucket Name: Enter a unique name for your bucket. Bucket names must be globally unique and adhere to Amazon S3 bucket naming rules.
   - Region: Select the AWS Region where you want the bucket to reside. Choosing a region close to your location can reduce latency.
     - Add the region selected to your `.env` file as `AWS_REGION`
   - It's fine to leave the rest of the configurations the default options
 
 - Review your settings and click _Create bucket_.
-
 
 #### Obtain AWS Credentials
 
@@ -194,22 +197,22 @@ require('crypto').randomBytes(64).toString('hex')
 - Save the `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` to the `.env` file, along with the bucket name as `AWS_S3_BUCKET`
 
 #### Allow public viewing of image data
+
 - Add this following JSON to the bucket policy under the _Permissions_ tab when viewing the S3 bucket created
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::[bucket_name]/*"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::[bucket_name]/*"
+    }
+  ]
 }
 ```
 
 #### This is a pain to setup for your first time, so here's a helpful [video walkthrough](https://www.youtube.com/watch?v=e6w9LwZJFIA). Good luck!!
-

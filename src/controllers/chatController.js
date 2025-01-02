@@ -84,11 +84,14 @@ exports.getConversationById = async (req, res) => {
       include: {
         participants: {
           include: {
-            user: { select: { id: true, username: true } },
+            user: { select: { id: true, username: true } }, // Include participant details
           },
         },
         messages: {
           orderBy: { createdAt: "asc" },
+          include: {
+            sender: { select: { id: true, username: true } }, // Include sender details
+          },
         },
       },
     });

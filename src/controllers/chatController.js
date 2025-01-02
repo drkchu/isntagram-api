@@ -173,6 +173,7 @@ exports.sendMessage = async (req, res) => {
         senderId: userId,
         conversationId: chatId,
       },
+      include: { sender: { select: { id: true, username: true }}},
     });
 
     // Notify participants via WebSocket, they gotta be listening in to what's happening

@@ -58,7 +58,15 @@ exports.createConversation = async (req, res) => {
         },
       },
       include: {
-        participants: true,
+        participants: {
+          include: {
+            user: { select: { id: true, username: true } },
+          },
+        },
+        messages: {
+          take: 1, // Fetch the latest message
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 

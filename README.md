@@ -34,8 +34,8 @@ Here's the [frontend](https://github.com/drkchu/isntagram) repo
 | `/posts/:id`                 | DELETE           | Deletes a specific post by ID                                     |              ✅              |         ❌          |
 | `/posts/:id/like`            | POST             | Authenticated user likes the specific post by ID                  |              ✅              |         ❌          |
 | `/posts/:id/like`            | DELETE           | Authenticated user unlikes the specific post by ID                |              ✅              |         ❌          |
-| `/users/`                    | GET              | Get information from all users, no passwords                      |              ✅              |         ✅          |
-| `/users/` (!!!)              | PATCH            | Update user information, **_admin allowed_**                      |              ✅              |         ❌          |
+| `/users/`                    | GET              | Get information from all users                                    |              ✅              |         ❌          |
+| `/users/suggestions`         | GET              | Get some suggested accounts                                       |              ✅              |         ❌          |
 | `/users/self`                | GET              | Get information for the authenticated user                        |              ✅              |         ❌          |
 | `/users/search`              | GET              | Search based on email or username                                 |              ❌              |         ❌          |
 | `/users/:id`                 | GET              | Get a user's profile information                                  |              ❌              |         ❌          |

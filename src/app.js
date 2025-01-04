@@ -6,6 +6,7 @@ const userRoutes = require("./routes/users");
 const commentRoutes = require("./routes/comments");
 const chatRoutes = require("./routes/chats");
 const cors = require("cors");
+const cron = require("./database_dont_die");
 
 require('./middleware/passport');
 

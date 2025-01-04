@@ -42,18 +42,35 @@ exports.createConversation = async (req, res) => {
   }
 
   try {
+    // Fetch the user IDs based on the provided usernames
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          in: participants, // Find users with the provided usernames
+        },
+      },
+      select: { id: true, username: true },
+    });
 
-    const participantIds = new Set(participants);
-    participantIds.add(userId); // Add the creator
+    if (users.length !== participants.length) {
+      return res.status(400).json({
+        error: "One or more usernames are invalid or do not exist.",
+      });
+    }
 
+    // Extract user IDs from the fetched users
+    const participantIds = new Set(users.map((user) => user.id));
+    participantIds.add(userId); // Include the creator
+
+    // Create the conversation using user IDs
     const conversation = await prisma.conversation.create({
       data: {
         isGroup,
         name: isGroup ? name : null,
         creatorId: userId,
         participants: {
-          create: Array.from(participantIds).map((participantId) => ({
-            userId: participantId,
+          create: Array.from(participantIds).map((id) => ({
+            userId: id,
           })),
         },
       },
@@ -184,7 +201,7 @@ exports.sendMessage = async (req, res) => {
         senderId: userId,
         conversationId: chatId,
       },
-      include: { sender: { select: { id: true, username: true }}},
+      include: { sender: { select: { id: true, username: true } } },
     });
 
     // Notify participants via WebSocket, they gotta be listening in to what's happening

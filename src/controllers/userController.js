@@ -1,17 +1,11 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Admin only
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
-        // Basically everything except their password
-        id: true,
         username: true,
-        email: true,
-        isAdmin: true,
-        createdAt: true,
       },
     });
     res.json(users);
@@ -20,6 +14,39 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch users." });
   }
 };
+
+exports.getSuggestedAccounts = async (req, res) => {
+  const userId = req.userId;
+  try {
+    const suggestedUsers = await prisma.user.findMany({
+      where: {
+        id: { not: userId },
+      },
+      select: {
+        id: true,
+        username: true,
+        profile: {            // Join the profile table and fetch avatarUrl
+          select: {
+            avatarUrl: true
+          }
+        }
+      }
+    });
+
+    // Flatten the response to avoid nested profile objects
+    const formattedUsers = suggestedUsers.map(user => ({
+      id: user.id,
+      username: user.username,
+      avatarUrl: user.profile?.avatarUrl
+    }));
+
+    res.json(formattedUsers);
+  } catch (error) {
+    console.error("Error fetching suggested accounts:", error);
+    res.status(500).json({ error: "Failed to fetch suggested accounts." });
+  }
+};
+
 
 exports.getAuthenticatedUser = async (req, res) => {
   const userId = req.userId;
@@ -87,7 +114,7 @@ exports.getUserProfileById = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: "User not found." });
 
-    res.json({user});
+    res.json({ user });
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Failed to fetch user." });
@@ -184,27 +211,27 @@ exports.updateUserProfile = async (req, res) => {
 };
 
 exports.deleteUser = async (req, res) => {
-    const { userId } = req.params;
-  
-    // Check if the requester is authorized
-    if (req.userId !== userId && !req.isAdmin) {
-      return res
-        .status(403)
-        .json({ error: "You are not authorized to delete this user." });
-    }
-  
-    try {
-      // Delete the user (since I'm using cascading deletes, all the associated relationships are handled, hopefully LOL)
-      await prisma.user.delete({
-        where: { id: userId },
-      });
-  
-      res.json({ message: "User deleted successfully." });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ error: "Failed to delete user." });
-    }
-  };
+  const { userId } = req.params;
+
+  // Check if the requester is authorized
+  if (req.userId !== userId && !req.isAdmin) {
+    return res
+      .status(403)
+      .json({ error: "You are not authorized to delete this user." });
+  }
+
+  try {
+    // Delete the user (since I'm using cascading deletes, all the associated relationships are handled, hopefully LOL)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.json({ message: "User deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Failed to delete user." });
+  }
+};
 
 exports.followUser = async (req, res) => {
   const followerId = req.userId;

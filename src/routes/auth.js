@@ -121,7 +121,8 @@ router.get(
       expiresIn: process.env.TOKEN_EXPIRY || "1h",
     });
 
-    const frontendURL = `http://localhost:3001/auth/callback?token=${token}`;
+    // const frontendURL = `http://localhost:3001/auth/callback?token=${token}`;
+    const frontendURL = `${process.env.FRONT_END_URL}/auth/callback?token=${token}`;
     res.redirect(frontendURL);
   }
 );

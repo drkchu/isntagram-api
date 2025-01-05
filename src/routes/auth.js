@@ -122,7 +122,9 @@ router.get(
     });
 
     // const frontendURL = `http://localhost:3001/auth/callback?token=${token}`;
-    const frontendURL = `${process.env.FRONT_END_URL}/auth/callback?token=${token}`;
+    const frontendURL = `https://isntagram-site.netlify.app/auth/callback?token=${token}`;
+    
+    
     res.redirect(frontendURL);
   }
 );

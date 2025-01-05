@@ -114,6 +114,9 @@ AWS_SECRET_ACCESS_KEY=[your_iam_secret_access_key]
 AWS_S3_BUCKET=[your_s3_bucket_name]
 
 PORT=3000 # Whatever port you'd like to use
+
+# Frontend URL (localhost:3001 for example if ran locally)
+FRONT_END_URL=[your_frontend_url]
 ```
 
 ### 4. Setting up the database (Supabase)

@@ -19,7 +19,7 @@ const http = require('http');
 const server = http.createServer(app); // Create an HTTP server
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3001", // THE FRONTEND URL
+    origin: "https://isntagram-site.netlify.app",
     methods: ["GET", "POST"],
   },
 });

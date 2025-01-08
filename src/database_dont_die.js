@@ -9,7 +9,7 @@ cron.schedule('*/14 * * * *', async () => { // Updates every 14 minutes so that 
         });
 
         if (guestUser) {
-            console.log("Database ping successful - Guest user accessed at 11:11 PM Server time");
+            console.log("Database ping successful");
         } else {
             console.log("Guest user not found. Please check the database.");
         }
